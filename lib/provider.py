@@ -67,8 +67,8 @@ def normalize_sources(tmp_file_path, section, provider_dir):
             for category in categories(section):
                 category_path_in_tar = os.path.join(Path(top_dir_name), category, block_file_name)
                 member_name = member.name
-                uid = str(uuid.uuid4())
                 if member_name == category_path_in_tar:
+                    uid = str(uuid.uuid4())
                     create_dir(os.path.join(Path(provider_dir, uid)))
                     write_file(tar.extractfile(member_name).read(), os.path.join(Path(provider_dir, uid, block_file_name)), 'wb')
 
