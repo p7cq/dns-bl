@@ -9,8 +9,6 @@ from db import get_zone_header
 from common import is_ipv4
 
 
-# response policy zone file creation
-
 def whitelisted_domains(home_dir):
     whitelist_path = os.path.join(Path(home_dir, 'var/db'))
     whitelist_file_prefix = config().get(own(), 'whitelist_file_prefix')
@@ -38,7 +36,7 @@ def header(home_dir):
 def valid(record):
     if is_ipv4(record):
         return False
-    if ' ' in record or '\t' in record or '\n' in record or '\r' in record or '\v' in record or '\f' in record:
+    if ' ' in record and '\t' in record or '\n' in record or '\r' in record or '\v' in record or '\f' in record:
         return False
     if record.endswith('.'):
         return False
@@ -61,6 +59,7 @@ def filter_domains(home_dir):
     redirect = config().get(own(), 'redirect')
     whitelist = whitelisted_domains(home_dir)
     domains = set()
+
     for r, d, files in os.walk(work_dir):
         for f in files:
             if f == block_file_name:
@@ -74,22 +73,24 @@ def filter_domains(home_dir):
                     file.close()
                 for line in lines:
                     domain = line.strip()
+                    domain = domain.replace('\t', ' ')
+                    if domain.startswith('0.0.0.0 ') or domain.startswith('127.0.0.1 '):
+                        domain = domain.split()[1]
                     if not valid(domain):
                         continue
                     if domain in whitelist:
                         continue
                     domains.add(domain + ' ' + redirect)
-    print(len(domains))
+    print(len(domains)) # not counting subdomains
     return domains
 
 
 def create_response_policy_file(home_dir):
     domains = filter_domains(home_dir)
     if len(domains) > 0:
-        # remove existing file
         response_policy_file = config().get(own(), 'rpz_file')
         if os.path.isfile(response_policy_file):
-            os.remove(response_policy_file)
+            os.remove(response_policy_file) # remove existing file
         add_subdomains = config().get(own(), 'add_subdomains')
         try:
             file = open(response_policy_file, 'a')
