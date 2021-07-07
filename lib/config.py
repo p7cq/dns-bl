@@ -14,5 +14,5 @@ def categories(section):
 
 
 # configuration section name
-def own():
-    return 'dns-bl'
+def _global():
+    return 'global'

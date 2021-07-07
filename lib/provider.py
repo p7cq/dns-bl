@@ -5,7 +5,7 @@ import uuid
 from pathlib import Path
 
 from config import config
-from config import own
+from config import _global
 from config import categories
 from common import download
 from common import write_file
@@ -15,15 +15,15 @@ from common import create_dir
 def get_block_lists(home_dir):
     create_dir_layout(home_dir)
 
-    if config().get(own(), 'download_enabled').lower() != 'yes':
+    if config().get(_global(), 'download_enabled').lower() != 'yes':
         return
 
-    work_dir = os.path.join(Path(home_dir), config().get(own(), 'work_dir'))
+    work_dir = os.path.join(Path(home_dir), config().get(_global(), 'work_dir'))
     sections = config().sections()
-    separator = config().get(own(), 'section_separator')
+    separator = config().get(_global(), 'section_separator')
 
     for section in sections:
-        if section == own():
+        if section == _global():
             continue
 
         if config().get(section, 'enabled').lower() == 'yes':
@@ -31,20 +31,20 @@ def get_block_lists(home_dir):
             provider = section.split(separator)[0]
             provider_dir = os.path.join(Path(work_dir), provider)
             tmp_file_path = os.path.join(provider_dir, str(uuid.uuid4())) # temp download path
-            normalize_sources(download(url, tmp_file_path), section, provider_dir)
+            normalize_source(download(url, tmp_file_path), section, provider_dir)
 
 
 def create_dir_layout(home_dir):
     sections = config().sections()
-    separator = config().get(own(), 'section_separator')
-    work_dir = os.path.join(Path(home_dir), config().get(own(), 'work_dir'))
+    separator = config().get(_global(), 'section_separator')
+    work_dir = os.path.join(Path(home_dir), config().get(_global(), 'work_dir'))
 
-    if os.path.exists(work_dir) and config().get(own(), 'remove_downloaded_content').lower() == 'yes':
+    if os.path.exists(work_dir) and config().get(_global(), 'remove_downloaded_content').lower() == 'yes':
         shutil.rmtree(work_dir)
         os.mkdir(work_dir)
 
     for section in sections:
-        if section == own() or config().get(section, 'enabled').lower() == 'no':
+        if section == _global() or config().get(section, 'enabled').lower() == 'no':
             continue
 
         block_categories = categories(section)
@@ -55,11 +55,11 @@ def create_dir_layout(home_dir):
                 create_dir(os.path.join(Path(work_dir), provider))
 
 
-def normalize_sources(tmp_file_path, section, provider_dir):
-    block_file_name = config().get(own(), 'block_file_name')
-    mime_type = config().get(section, 'mime_type')
+def normalize_source(tmp_file_path, section, provider_dir):
+    block_file_name = config().get(_global(), 'block_file_name')
+    file_type = config().get(section, 'file_type')
 
-    if mime_type == 'application/gzip':
+    if file_type == 'gzip':
         top_dir_name = 'BL' # directory under all categories are extracted from shallalist.tar.gz
         tar = tarfile.open(tmp_file_path, 'r:gz')
 
@@ -74,7 +74,7 @@ def normalize_sources(tmp_file_path, section, provider_dir):
 
         os.remove(tmp_file_path)
 
-    if mime_type == 'text/plain':
+    if file_type == 'text':
         for category in categories(section):
             uid = str(uuid.uuid4())
             create_dir(os.path.join(Path(provider_dir, uid)))

@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 from config import config
-from config import own
+from config import _global
 from config import categories
 from db import get_serial
 from db import get_zone_header
@@ -11,7 +11,7 @@ from common import is_ipv4
 
 def whitelisted_domains(home_dir):
     whitelist_path = os.path.join(Path(home_dir, 'var/db'))
-    whitelist_file_prefix = config().get(own(), 'whitelist_file_prefix')
+    whitelist_file_prefix = config().get(_global(), 'whitelist_file_prefix')
     whitelist = set()
     for r, d, files in os.walk(whitelist_path):
         for f in files:
@@ -54,9 +54,9 @@ def valid(record):
 
 
 def filter_domains(home_dir):
-    work_dir = os.path.join(Path(home_dir), config().get(own(), 'work_dir'))
-    block_file_name = config().get(own(), 'block_file_name')
-    redirect = config().get(own(), 'redirect')
+    work_dir = os.path.join(Path(home_dir), config().get(_global(), 'work_dir'))
+    block_file_name = config().get(_global(), 'block_file_name')
+    redirect = config().get(_global(), 'redirect')
     whitelist = whitelisted_domains(home_dir)
     domains = set()
 
@@ -88,10 +88,10 @@ def filter_domains(home_dir):
 def create_response_policy_file(home_dir):
     domains = filter_domains(home_dir)
     if len(domains) > 0:
-        response_policy_file = config().get(own(), 'rpz_file')
+        response_policy_file = config().get(_global(), 'rpz_file')
         if os.path.isfile(response_policy_file):
             os.remove(response_policy_file) # remove existing file
-        add_subdomains = config().get(own(), 'add_subdomains')
+        add_subdomains = config().get(_global(), 'add_subdomains')
         try:
             file = open(response_policy_file, 'a')
             file.write(header(home_dir).strip() + '\n')
