@@ -8,8 +8,6 @@ from urllib.request import urlopen
 
 def main():
     try:
-        if len(DNSBL_HOME) == 0:
-            raise NameError('DNSBL_HOME environment variable not found')
         init()
         get_block_lists()
         create_response_policy_file()
@@ -140,7 +138,7 @@ def valid(record): # any record that makes it to RPZ file is validated here
 def sanitize(line):
     line = line.strip()
     line = line.replace('\t', ' ')
-    if line.startswith('0.0.0.0 ') or line.startswith('127.0.0.1 '):
+    if line.startswith(CFG_0_0_0_0) or line.startswith(CFG_127_0_0_1):
         line = line.split()[1]
     return line
 
@@ -177,14 +175,8 @@ def download(url, download_path):
 
 def user_agent():
     ua = [
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36',
-        'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2)',
-        'Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.116 Safari/537.36',
-        'Mozilla/5.0 (Linux; Android 8.0.0; SM-G960F Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.84 Mobile Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36',
-        'Mozilla/5.0 (X11; Linux x86_64; rv:89.0) Gecko/20100101 Firefox/89.0',
+        'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:90.0) Gecko/20100101 Firefox/90.0',
+        'Mozilla/5.0 (Linux x86_64; rv:90.0) Gecko/20100101 Firefox/90.0',
         'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.166 Safari/537.36'
     ]
     return ua[random.randrange(len(ua))]
@@ -207,9 +199,9 @@ def create_dir(path):
     if not os.path.exists(path):
         try:
             os.makedirs(path)
-            return True
         except FileExistsError:
             return True
+    return True
 
 
 def get_zone_header():
@@ -289,13 +281,18 @@ def cfg_default():
 def debug():
     return False
 
+try:
+    DNSBL_HOME = os.environ['DNSBL_HOME']
+except Exception as e:
+    handle_error('DNSBL_HOME environment variable not found')
+    sys.exit()
 
-DNSBL_HOME = os.environ['DNSBL_HOME']
 CFG = ConfigParser()
 CFG_INI_FILE = os.path.join(Path(DNSBL_HOME), 'conf/dns-bl.ini')
 CFG_WORK_DIR = os.path.join(Path(DNSBL_HOME), 'var/run/bl')
 CFG_GLOBAL = 'global' # global section
 CFG_BLOCKFILE_NAME = 'domains' # name of the file in downloaded content
-
+CFG_0_0_0_0 = '0.0.0.0 '
+CFG_127_0_0_1 = '127.0.0.1 '
 
 main()

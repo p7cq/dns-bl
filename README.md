@@ -89,10 +89,10 @@ ___
 
 #### Running
 
-Run the BASH (not Python) script as the ```root``` user:
+Run the BASH script as the ```root``` user:
 
 ```bash
-# DNSBL_HOME/bin/run.sh
+# $DNSBL_HOME/bin/run.sh
 ```
 
 The generated ```rpz.db``` file will have the same owner and group as its parent directory.
