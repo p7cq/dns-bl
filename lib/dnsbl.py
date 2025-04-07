@@ -150,7 +150,7 @@ def user_agent():
     with open(db, 'r') as file:
         ua = file.readlines()
 
-    return ua[random.randrange(len(ua))]
+    return ua[random.randrange(len(ua))].strip()
 
 
 def filter_domains():
