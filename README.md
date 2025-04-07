@@ -3,7 +3,7 @@ A standalone Python + BASH scripts that creates a DNS Response Policy Zone file 
 ```
 host1.example.org
 host2.example.org
-``` 
+```
 
 or in *hosts* form
 
@@ -37,6 +37,7 @@ Configuration properties are defined in `[global]` section in `dns-bl.ini`.
 - `whitelist_file_prefix` - prefix of file(s) containing domains to exclude from generated RPZ file
 - `zone_serial_form` - DNS zone file serial format
 - `skip_block_list_download` - whether to skip download of block lists
+- `run_dir` - the absolute path to the download directory
 
 ```ini
 [global]
@@ -46,6 +47,7 @@ add_subdomains = no
 whitelist_file_prefix = whitelist_
 zone_serial_form = incremental
 skip_block_list_download = false
+run_dir = /run/dns-bl
 ```
 
 ##### Whitelists
@@ -106,6 +108,7 @@ Run the BASH script as the ```root``` user:
 /opt/dns-bl/bin/run.sh
 ```
 
-The generated ```rpz.db``` file will have the same owner and group as its parent directory, `/var/named`.
-If the configuration file is missing, a default will be generated automatically.
+The generated `rpz.db` file will have the same owner and group as its parent directory, `/var/named`.
+
+If the configuration file is missing, a file containing default values will be generated automatically.
 

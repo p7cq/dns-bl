@@ -32,15 +32,15 @@ def init():
     else:
         raise RuntimeError('section [' +CFG_GLOBAL+ '] not found')
 
-    if os.path.isdir(CFG_WORK_DIR):
+    if os.path.isdir(run_dir()):
         if not skip_block_list_download():
-            shutil.rmtree(CFG_WORK_DIR)
+            shutil.rmtree(run_dir())
 
-    create_dirs(CFG_WORK_DIR)
+    create_dirs(run_dir())
 
 
 def block_lists():
-    if skip_block_list_download(): 
+    if skip_block_list_download():
         print('notice: skipping download and using existing files')
         return
 
@@ -56,7 +56,7 @@ def block_lists():
 
             if scheme in ['http', 'https']:
                 url = uri
-                download_filename = os.path.join(CFG_WORK_DIR, block_list_filename(provider, CFG.get(section, 'categories')))
+                download_filename = os.path.join(run_dir(), block_list_filename(provider, CFG.get(section, 'categories')))
                 try:
                     download(url, download_filename)
                 except Exception as e:
@@ -64,12 +64,12 @@ def block_lists():
 
             if scheme in ['file']:
                 url = uri[uri.index(':')+1:len(uri)]
-                shutil.copy(url, os.path.join(CFG_WORK_DIR, block_list_filename(provider, CFG.get(section, 'categories'))))
+                shutil.copy(url, os.path.join(run_dir(), block_list_filename(provider, CFG.get(section, 'categories'))))
 
             if scheme in ['rsync']:
                 url = uri
                 for category in CFG.get(section, 'categories').split(','):
-                    subprocess.call([scheme, '-rlD', url+ '/dest/' +category.strip()+ '/domains', os.path.join(CFG_WORK_DIR, block_list_filename(provider, category))])
+                    subprocess.call([scheme, '-rlD', url+ '/dest/' +category.strip()+ '/domains', os.path.join(run_dir(), block_list_filename(provider, category))])
 
 
 def response_policy_file():
@@ -107,7 +107,8 @@ def default_config():
         'add_subdomains': 'no',
         'whitelist_file_prefix': 'whitelist_',
         'zone_serial_form': 'incremental',
-        'skip_block_list_download': 'false'
+        'skip_block_list_download': 'false',
+        'run_dir': '/run/dns-bl'
     }
 
     create_dirs(str(Path(CFG_INI_FILE).parent.absolute()))
@@ -158,9 +159,9 @@ def filter_domains():
     white_list = whitelist()
     domains = set()
 
-    files = os.listdir(CFG_WORK_DIR)
+    files = os.listdir(run_dir())
     for file in files:
-        file_path = os.path.join(CFG_WORK_DIR, file)
+        file_path = os.path.join(run_dir(), file)
         if os.path.isfile(file_path):
             lines = ()
             with open(file_path, 'r') as file:
@@ -190,7 +191,7 @@ def valid_record(line):
     if not valid(record):
         return None
 
-    return record 
+    return record
 
 
 def sanitize(line):
@@ -320,6 +321,20 @@ def skip_block_list_download():
         return True
     return False
 
+def run_dir():
+    dir = CFG.get(CFG_GLOBAL, 'run_dir')
+
+    if not dir:
+        to_stdout('invalid run_dir: empty')
+        sys.exit(1)
+
+    if not dir.startswith('/'):
+        to_stdout('invalid run_dir: must be an absolute path')
+        sys.exit(1)
+
+    return os.path.join(Path(dir), 'lists')
+
+
 try:
     DNSBL_HOME = os.environ['DNSBL_HOME']
 except Exception as e:
@@ -329,8 +344,6 @@ except Exception as e:
 CFG = ConfigParser()
 CFG_INI_FILE = os.path.join(Path(DNSBL_HOME), 'etc/dns-bl.ini')
 CFG_GLOBAL = 'global'
-CFG_RUN_DIR = '/run/dns-bl' # on tmpfs
-CFG_WORK_DIR = os.path.join(Path(CFG_RUN_DIR), 'lists')
 CFG_0_0_0_0 = '0.0.0.0 '
 CFG_127_0_0_1 = '127.0.0.1 '
 CFG_DATE_FORMAT = '%Y%m%d'
