@@ -1,7 +1,6 @@
 #!/bin/bash
 
 DNSBL_HOME="$(dirname "$(dirname "$(realpath -e "$0")")")" && export DNSBL_HOME
-LOG="${DNSBL_HOME}"/last.log
 
 declare -a ACTIONS=()
 
@@ -16,11 +15,8 @@ _has_action() {
 }
 
 _exec() {
-  if /usr/bin/python3 "${DNSBL_HOME}"/lib/dnsbl.py >> "${LOG}"; then
-    return 0
-  else
-    return 166
-  fi
+  /usr/bin/python3 "${DNSBL_HOME}"/lib/dnsbl.py
+  return $?
 }
 
 _main() {
