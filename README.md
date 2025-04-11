@@ -33,7 +33,6 @@ Configuration properties are defined in `[global]` section in `dns-bl.ini`.
 
 - `rpz_file` - the absolute path to BIND9's response policy zone file
 - `redirect` - the redirect used
-- `add_subdomains` - whether to include subdomains for each domain
 - `whitelist_file_prefix` - prefix of file(s) containing domains to exclude from generated RPZ file
 - `zone_serial_form` - DNS zone file serial format
 - `skip_block_list_download` - whether to skip download of block lists
@@ -43,7 +42,6 @@ Configuration properties are defined in `[global]` section in `dns-bl.ini`.
 [global]
 rpz_file = /var/named/rpz.db
 redirect = IN CNAME .
-add_subdomains = no
 whitelist_file_prefix = whitelist_
 zone_serial_form = incremental
 skip_block_list_download = false

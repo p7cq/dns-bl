@@ -154,10 +154,7 @@ def response_policy_file():
             file.write(zone_header().strip() + '\n')
             for domain in domains:
                 record = domain + '\n'
-                subdomain_record = ''
-                if CFG.get(CFG_GLOBAL, 'add_subdomains').lower() == 'yes':
-                    subdomain_record = '*.' + record
-                file.write(record + subdomain_record)
+                file.write(record)
             set_permissions(response_policy_file)
     else:
         LOG.info('nothing to do')
@@ -167,7 +164,6 @@ def default_config():
     CFG[CFG_GLOBAL] = {
         'rpz_file': os.path.join(home(), 'rpz.db'),
         'redirect': 'IN CNAME .',
-        'add_subdomains': 'no',
         'whitelist_file_prefix': 'whitelist_',
         'zone_serial_form': 'incremental',
         'skip_block_list_download': 'false',
